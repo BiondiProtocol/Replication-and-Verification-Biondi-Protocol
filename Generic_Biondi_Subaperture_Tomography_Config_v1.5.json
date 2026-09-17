@@ -1,0 +1,358 @@
+{
+  "protocol": {
+    "name": "Generic Biondi-style broad-overlap sub-aperture pixel-tracking tomography",
+    "version": "1.5",
+    "supersedes": "1.4",
+    "canonical_pipeline": [
+      "COMMON CORE: Reference/Offset complex sub-apertures R_k,O_k",
+      "COMMON CORE: 32x32 complex u-PCC target registration -> Y_vector",
+      "COMMON CORE: two-arc robust nuisance correction -> G_arc_vector",
+      "COMMON CORE: q_arc_vector = Y_vector - G_arc_vector",
+      "BRANCH A: full ordered K50 modal characterization m=1..24; all W25 windows enter real two-component depth focus",
+      "BRANCH B: per-W25 ordered ellipse fit m=1..6; only accepted W25 windows enter the same real two-component depth focus"
+    ],
+    "controls_only": [
+      "raw Y_vector depth inversion",
+      "retired two-focal-flank q_old_vector",
+      "full-support W=50 inversion",
+      "legacy complex q_x+i*q_y focus"
+    ],
+    "epistemic_status": "Registration vectors are image-registration observables. Absolute/candidate depth remains conditional on the declared wavelength/velocity model and on the physical validity of the vector history. Kz computation, state-vector geometry, and W=25 numerical self-consistency have passed independent audits; vector fidelity and nuisance/model mismatch remain live.",
+    "branch_architecture": {
+      "branch_A_full_1_24": {
+        "label": "full/broad reference branch",
+        "modal_support": "full ordered K=50 q_arc sequence",
+        "modes": [
+          1,
+          24
+        ],
+        "depth_support_rule": "all 26 contiguous W25 windows",
+        "status": "reference branch"
+      },
+      "branch_B_selective_1_6": {
+        "label": "selective low-order ellipse branch",
+        "modal_support": "each contiguous W25 q_arc family independently",
+        "modes": [
+          1,
+          6
+        ],
+        "depth_support_rule": "only W25 families passing the ellipse gate",
+        "status": "versioned selective alternative; not a replacement for Branch A"
+      }
+    }
+  },
+  "input": {
+    "slc_path": null,
+    "slc_sha256": null,
+    "complex_dtype": null,
+    "raster_shape": {
+      "rows": null,
+      "columns": null
+    },
+    "axis_mapping": {
+      "canonical_array": "A[azimuth,row ; range,column]",
+      "azimuth_axis": null,
+      "range_axis": null,
+      "display_coordinate_convention": "column=x, row=y"
+    },
+    "timing": {
+      "acquisition_start_utc": null,
+      "acquisition_stop_utc": null,
+      "line_time_spacing_s": null,
+      "processed_azimuth_sample_rate_hz": null
+    },
+    "processed_spectrum": {
+      "azimuth_bandwidth_hz": null,
+      "doppler_centroid_hz": null,
+      "doppler_support_hz": [
+        null,
+        null
+      ]
+    },
+    "radar": {
+      "center_frequency_hz": null,
+      "polarization": null,
+      "acquisition_mode": null,
+      "look_direction": null
+    },
+    "geometry_sources": {
+      "state_vectors_frame": "ECEF",
+      "state_vector_positions": null,
+      "state_vector_velocities": null,
+      "geolocation_model": null,
+      "ellipsoid_model": "WGS84"
+    }
+  },
+  "target_geometry": {
+    "native_slc_coordinates_required": true,
+    "overlay_verification_required": true,
+    "rasterize_and_save_exact_ordered_pixels": true,
+    "parallel_family_rule": {
+      "use_corrected_view_for_design_if_needed": true,
+      "final_coordinates_must_be_native_slc": true,
+      "define_ground_or_base_constraint_separately": true,
+      "intersect_laterally_shifted_parallel_lines_with_base": true,
+      "extend_to_common_line_length_to_avoid_upper_edge_truncation": true
+    }
+  },
+  "fourier_stage": {
+    "canonical_transform": "DFT2",
+    "reduced_transform_allowed_only_after_equivalence_test": true,
+    "fft_shift_convention": "centered spectrum"
+  },
+  "filter_bank": {
+    "num_matched_pairs_K": 50,
+    "reference_offset_bandwidth_hz": null,
+    "reference_offset_separation_hz": null,
+    "pair_centers_hz": [],
+    "window": "rectangular",
+    "require_broad_overlap": true,
+    "freeze_before_target_inspection": true
+  },
+  "registration": {
+    "status": "canonical and unchanged",
+    "method": "complex phase cross-correlation",
+    "patch_size_pixels": [
+      32,
+      32
+    ],
+    "normalization": null,
+    "upsample_factor": 100,
+    "pairing_rule": "register only Reference_k against Offset_k at same k",
+    "shift_convention": {
+      "dx": "column shift",
+      "dy": "row shift"
+    },
+    "injected_translation_regression_required": true,
+    "Y_vector_definition": "[target_dx,target_dy]"
+  },
+  "nuisance_correction": {
+    "canonical_method": "two_arc_geometric_median",
+    "arc_operator": {
+      "samples_per_side_default": 10,
+      "sample_distribution": "approximately uniform along transect extent",
+      "registration_support_per_sample_pixels": [
+        32,
+        32
+      ],
+      "minimum_center_distance_from_entire_target_strip_pixels": 40,
+      "prefer_nonoverlapping_supports_within_each_arc": true,
+      "side_aggregation": "2D geometric median over independent registration vectors",
+      "combine_sides": "G_arc = (G_plus + G_minus)/2",
+      "residual": "q_arc = Y - G_arc",
+      "required_qc": [
+        "norm(G_plus-G_minus) by k",
+        "within-plus-arc vector scatter by k",
+        "within-minus-arc vector scatter by k",
+        "identity check Y = G_arc + q_arc"
+      ]
+    },
+    "retired_control": {
+      "name": "two_focal_flank_mean",
+      "description": "one + flank and one - flank registration near +/-40 px, averaged",
+      "output_name": "q_old",
+      "status": "control/historical only; not canonical"
+    }
+  },
+  "scalar_coherence_qc": {
+    "enabled": true,
+    "default_spatial_window_pixels": 7,
+    "depth_focus_input": false
+  },
+  "modal_analysis": {
+    "primary_observable": "q_arc_vector",
+    "branch_A_full_1_24": {
+      "support": "K=50 full ordered sequence",
+      "mode_min": 1,
+      "mode_max": 24,
+      "fit_model": "dx=A*cos(2*pi*m*k/K)+B*sin(2*pi*m*k/K); dy=C*cos(2*pi*m*k/K)+D*sin(2*pi*m*k/K)",
+      "intercept": false,
+      "metrics": [
+        "R2",
+        "rms_amplitude",
+        "major_axis",
+        "minor_axis",
+        "b_over_a",
+        "orientation",
+        "handedness",
+        "ellipse_score"
+      ],
+      "ellipse_score": "R2*(b/a)",
+      "gates_depth_windows": false
+    },
+    "branch_B_selective_1_6": {
+      "support": "each contiguous W25 family; local n=0..24",
+      "mode_min": 1,
+      "mode_max": 6,
+      "fit_model": "q_n = c + u*cos(2*pi*m*n/W) + v*sin(2*pi*m*n/W)",
+      "intercept_2D_center": true,
+      "mode_selection": "maximum adjusted ellipse R2",
+      "ellipse_gate": {
+        "adjusted_R2_min": 0.25,
+        "b_over_a_min": 0.1,
+        "minor_semiaxis_px_min": 0.005,
+        "phase_lock_gate": false
+      },
+      "sampling_rationale": "W/m >= approximately 4 vectors per circuit; with W=25 this gives m<=6",
+      "gates_depth_windows": true
+    }
+  },
+  "kz_geometry": {
+    "pair_center_to_time_mapping": null,
+    "reference_state": "aperture-center state",
+    "los_definition": "e_LOS = normalize(r_target-r_sensor_ref)",
+    "along_aperture_los_orthogonal_direction": "e_A = normalize(v_ref-(v_ref dot e_LOS)*e_LOS)",
+    "baseline_definition": "B_k = r_sensor(t_k)-r_sensor(t_ref)",
+    "Bperp_definition": "Bperp_k = B_k dot e_A; same-orbit virtual baseline projected perpendicular to LOS",
+    "do_not_use_as_Bperp": "tiny cross-orbit e_LOS x e_A component",
+    "formula": "Kz_k = 4*pi*Bperp_k/(lambda*r_k*sin(theta_k))",
+    "independent_audit_route": "triangle/law-of-cosines |Bperp| plus range-derivative incidence",
+    "lambda_model": {
+      "mode": "constant_or_declared_extension",
+      "lambda_m": null,
+      "empirical_calibration_must_be_declared": true,
+      "calibration_site_not_independent_validation": true
+    }
+  },
+  "depth_focus": {
+    "canonical_observable": "q_arc_vector",
+    "canonical_method": "W25_contiguous_window_real_two_component_least_squares",
+    "K_total": 50,
+    "W": 25,
+    "num_contiguous_windows_when_K50": 26,
+    "steering_matrix": "X_z[k,:]=[cos(Kz_k*z),sin(Kz_k*z)]",
+    "fit": "B_z,w = argmin_B ||Q_w-X_z,w B||_F^2",
+    "R2_denominator": "centered observed vector energy",
+    "adjusted_R2": {
+      "formula": "1-(1-R2)*(n-1)/(n-p-1)",
+      "n": "2*W",
+      "p": 4
+    },
+    "canonical_score": "S_W25(x,z)=max_w adjusted_R2(x,z,w)",
+    "required_saved_support_identity": [
+      "winning_window_start_k",
+      "winning_window_end_k"
+    ],
+    "strengthening_criteria": [
+      "neighboring spatial persistence",
+      "support in nearby overlapping W25 windows"
+    ],
+    "W50_control": {
+      "status": "stringent control only",
+      "interpretation": "tests coherence across the full aperture; failure does not veto a W25 candidate"
+    },
+    "signed_depth_equivalence": {
+      "rule": "span{cos(Kz*z),sin(Kz*z)} equals span{cos(-Kz*z),sin(-Kz*z)}",
+      "canonical_search_interval": "0 <= z < Z_rec/2"
+    },
+    "legacy_complex_focus": {
+      "status": "diagnostic only",
+      "purpose": [
+        "handedness",
+        "signed/conjugate branch duplication",
+        "periodic steering alias"
+      ]
+    },
+    "branch_rules": {
+      "branch_A_full_1_24": "S_W25(x,z)=max over all 26 contiguous W25 windows of adjusted_R2(x,z,w)",
+      "branch_B_selective_1_6": "S_gate(x,z)=max over ellipse-gate-accepted W25 windows only; blank/NaN if none pass"
+    },
+    "z0_branch_B_diagnostic": "For accepted W25 families, score z=0 separately as a constant-vector fit because ordinary steering is rank-deficient at z=0."
+  },
+  "validation_gates": {
+    "axis_gate": true,
+    "dft_equivalence_gate": true,
+    "filter_freeze_gate": true,
+    "registration_injected_shift_gate": true,
+    "same_k_pairing_gate": true,
+    "arc_geometry_gate": true,
+    "arc_identity_gate": true,
+    "W25_exact_support_gate": true,
+    "recurrence_gate": true,
+    "signed_branch_gate": true,
+    "physical_depth_gate": true,
+    "motion_observable_gate": true,
+    "branch_identity_gate": true,
+    "branch_B_ellipse_gate": true
+  },
+  "audits_and_exclusions": {
+    "completed": [
+      {
+        "audit": "W25 synthetic steering self-consistency 1-100 m",
+        "result": "Injected ideal trajectories recovered at injected depth; no intrinsic superlinear depth drift.",
+        "rules_out": "W25 solver numerical drift as primary cause."
+      },
+      {
+        "audit": "Independent Kz reconstruction from state vectors",
+        "result": "14950 entries; max abs Kz difference about 4.82e-7 rad/m; median relative error about 8.56e-7; correlation 1.0; steering entries reproduce to ~1e-5 scale at 34 m.",
+        "rules_out": "Coding/geometry error in current Bperp, range, theta, or Kz implementation."
+      },
+      {
+        "audit": "State-vector precision/interpolation",
+        "result": "Realistic uncertainty far too small to explain observed depth stretch.",
+        "rules_out": "Ordinary state-vector error as primary cause."
+      },
+      {
+        "audit": "Bperp definition against Biondi geometry figure",
+        "result": "Saved Bperp matches same-orbit LOS-orthogonal along-aperture component.",
+        "rules_out": "Mistaken cross-orbit interpretation as a reason to reject current synthetic baseline."
+      },
+      {
+        "audit": "Raw Y vs retired two-flank q_old",
+        "result": "Removing old flank correction does not remove deep overfocus.",
+        "rules_out": "Old two-focal-flank correction as sole cause."
+      },
+      {
+        "audit": "Two-arc operator comparison",
+        "result": "Arc correction is smaller and q_arc stays closer to raw Y, but deep families remain displaced.",
+        "rules_out": "Local flank over-correction as sole cause; vector/forward-model mismatch remains live."
+      },
+      {
+        "audit": "Cross-site common-mode credibility",
+        "result": "No universal unchanged q trajectory across sites; old local flank mean can increase variance.",
+        "rules_out": "One universal additive common-mode trajectory applicable everywhere."
+      },
+      {
+        "audit": "Campbell consistency control",
+        "result": "W25 support remains near the known shaft-depth anchor under q_old and raw Y.",
+        "status": "Consistency only; not independent absolute-depth validation because lambda was calibrated there."
+      }
+    ],
+    "summary_ruled_out_as_primary_cause": [
+      "W25 numerical/inversion drift",
+      "Kz implementation/coding error",
+      "ordinary state-vector interpolation/precision error",
+      "cross-orbit Bperp misinterpretation",
+      "retired two-focal-flank correction as sole cause",
+      "one universal common-mode trajectory"
+    ],
+    "leading_live_explanations": [
+      "vector fidelity limits from look-dependent scattering morphology, nonrigid focus, intensity-centroid drift, layover/shadow, multipath, or related registration effects",
+      "residual nuisance-model mismatch after arc correction",
+      "physical mismatch in wavelength/depth model",
+      "true partial-aperture structure supported by only a subset of the 50 looks"
+    ]
+  },
+  "outputs_required": [
+    "run_manifest_json",
+    "exact_rasterized_target_coordinates",
+    "filter_pair_centers_and_masks",
+    "Y_target_vectors",
+    "arc_sample_vectors_plus_minus",
+    "G_plus_G_minus_G_arc_q_arc",
+    "arc_disagreement_and_scatter_QC",
+    "scalar_coherence_QC",
+    "modal_metrics",
+    "Kz_geometry_table",
+    "W25_adjusted_R2_depth_score",
+    "W25_winning_window_identity",
+    "W25_window_by_window_support_summary",
+    "W50_stringent_control",
+    "legacy_complex_alias_diagnostic",
+    "branch_id_and_branch_parameters",
+    "branch_B_W25_ellipse_gate_family_table_when_used",
+    "branch_B_gate_occupancy_when_used",
+    "branch_B_winning_low_order_mode_and_ellipse_metrics_when_used",
+    "branch_B_gated_depth_score_when_used"
+  ]
+}
