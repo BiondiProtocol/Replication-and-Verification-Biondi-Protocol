@@ -14,7 +14,7 @@ The other files are explanatory. We have added several features not mentioned by
 4) We scanned vector families for harmonic elliptical excursion modes 1-24 to isolate non-random spatially co-registered pixel displacement trajectories that obey elliptical paths.
 5) We further gated this selection process by creating a more stringent second protocol branch that selects only resonance modes 1-6.
 6) We use a 25 sub-aperture vector family frame to look for matches with the Hermitian Adjoint (conjugate transpose) of a phase histories v. depth matrix called Steering Matrix.
-7) To sharpen non-random depth focus features we empirically identified a more selective variant which requires contiguous matching over 3 pixels at +/- 3 meters.
+7) To sharpen non-random depth focus features we empirically identified a more selective variant which requires contiguous matching over 2 pixels at +/- 3 meters. "2-window ±3 m Consensus Sharpening."
 
 We discovered, for example, that when processing signals from stepped pyramid walls depth focused tomograms showed ghosting, i.e. the reflective properties of the steps introduced an amplitude-mediated 
 effect on phase that created artifacts. The wall signal disappeared when we introduced the more stringent resonance modal gate, i.e. only modes 1-6, not 7-24. 
