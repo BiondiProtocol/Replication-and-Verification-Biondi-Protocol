@@ -12,7 +12,7 @@ The other files are explanatory. We have added several features not mentioned by
 3) We developed a custom-made flank-regional random speckle and scatter effect correction on target pixels' raw displacement vector trajectories choosing an arc of neighboring pixels 40-pixel apart
    from target and sampled therefrom.
 4) We scanned vector families for harmonic elliptical excursion modes 1-24 to isolate non-random spatially co-registered pixel displacement trajectories that obey elliptical paths.
-5) We further gates this selection process by creating a more stringent second protocol branch that selects only resonance modes 1-6.
+5) We further gated this selection process by creating a more stringent second protocol branch that selects only resonance modes 1-6.
 6) We use a 25 sub-aperture vector family frame to look for matches with the Hermitian Adjoint (conjugate transpose) of a phase histories v. depth matrix called Steering Matrix.
 7) To sharpen non-random depth focus features we empirically identified a more selective variant which requires contiguous matching over 3 pixels at +/1 3 meters.
 
