@@ -18,3 +18,17 @@ The other files are explanatory. We have added several features not mentioned by
 
 We discovered, for example, that when processing signals from stepped pyramid walls depth focused tomograms showed ghosting, i.e. the reflective properties of the steps introduced an amplitude-mediated 
 effect on phase that created artifacts. The wall signal disappeared when we introduced the more stringent resonance modal gate, i.e. only modes 1-6, not 7-24. 
+
+
+Addenda:
+1) We now have an improved co-registration method that overcomes an issue we detected when attempting to recover a synthetic spatial shift we devised. We found that range recovery was nearly complete,
+   but azimuth recovery was not. The issue only arose when shifting the image from under the 32x32 patch, not when shifting the patch itself over the image. The solution was to frame the 32x32 patch on
+   all sides with a 128-pixel frame that provides image context to the 32x32 patch. The way this works now is that the operator asks, what shift of the patch region over the Offset image, at the sub-pixel level, most closely
+   approximates the same image region of the Reference-image. That closest vector distance, range and azimuth, is the displacement vector for a given K-pair at a given pixel. Each pixel is evaluated in this way
+   for each sub-aperture pair to extract this displacement vector.
+
+   Therefore, each pixel is associated with a family of these displacement vectors, equal to the number of sub-aperture looks. The next step in the protocol then examines these vector families for elliptical
+   structure and assigns a modal score between 1 and an upper limit we define as at least four vectors per cycle. For example, a W=100 means there are 100 displacement vectors in the frame to search for elliptical
+   structure than must be defined by at least 4 vectors such that there cannot be more than 100/4=25 elliptical cycles in that frame of 100 vectors. The nomenclature to indicate that is W=100, m=1-25. By that logic,
+   m=1 means a single elliptical cycle defined by a 100-displacement-vector-station trajectory. This structural spatial (range-azimuth) vector field analysis adds a discriminatory layer to the protocol to detect
+   real motion and distinguish from random pixel instability due to non-ground motion factors. 
