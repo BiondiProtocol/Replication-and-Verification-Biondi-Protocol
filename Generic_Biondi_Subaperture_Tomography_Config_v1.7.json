@@ -1,0 +1,142 @@
+{
+  "protocol_name": "Generic Biondi Subaperture Tomography Protocol",
+  "protocol_version": "1.7",
+  "date": "2026-09-20",
+  "status": "generic template",
+  "purpose": "Per-run configuration schema for frequency-domain Reference Offset pair construction, complex vector registration, modal analysis, and conditional depth focus.",
+  "epistemic_status": "Registration vectors and depth-focus scores are image-processing observables and conditional model fits. They do not by themselves establish physical motion, void identity, penetration, or absolute depth.",
+  "required_per_run": {
+    "input_identity": {
+      "complex_image_filename": null,
+      "sha256": null,
+      "source_product": null,
+      "polarization": null,
+      "array_axis_convention": null,
+      "azimuth_doppler_conjugate_axis": null,
+      "coordinate_convention": "Record selected points with explicit row and column names."
+    },
+    "acquisition_geometry": {
+      "radar_wavelength_m": null,
+      "state_vector_source": null,
+      "slant_range_model": null,
+      "incidence_angle_model": null,
+      "look_direction": null,
+      "kz_sign_convention": null
+    },
+    "frequency_domain_pair_bank": {
+      "frequency_units": "Hz",
+      "fft_axis": null,
+      "fft_length": null,
+      "frequency_order": null,
+      "padding_rule": null,
+      "passband_shape": null,
+      "reference_offset_passband_width_hz": null,
+      "b_shift_hz": null,
+      "pair_count_k": null,
+      "edge_overlap_rule": {
+        "applies_to": "Successive Offset-edge spans in ordered K-pair placement.",
+        "maximum_successive_overlap_fraction": 0.05,
+        "maximum_successive_overlap_hz": "0.05 * b_shift_hz",
+        "minimum_successive_edge_advance_hz": "0.95 * b_shift_hz",
+        "validation": "For every adjacent pair, realized_overlap_hz <= 0.05 * b_shift_hz after discrete-bin rounding."
+      },
+      "pair_table_required_columns": [
+        "pair_index",
+        "reference_low_hz",
+        "reference_high_hz",
+        "offset_low_hz",
+        "offset_high_hz",
+        "reference_center_hz",
+        "offset_center_hz",
+        "realized_b_shift_hz",
+        "successive_offset_edge_overlap_hz",
+        "successive_offset_edge_overlap_fraction",
+        "mask_weighting",
+        "discrete_bin_rounding"
+      ],
+      "example_only": {
+        "b_shift_hz": 404.0,
+        "maximum_successive_overlap_hz": 20.2,
+        "minimum_successive_edge_advance_hz": 383.8,
+        "interpretation": "An Offset edge spanning 1000 to 1404 Hz may share at most 20.2 Hz with the next ordered Offset-edge span."
+      }
+    },
+    "registration": {
+      "pairing_rule": "Register only matched R_k and O_k for the same k. No inter-k stack alignment or daisy-chain registration.",
+      "estimator_name": null,
+      "complex_or_real_input": "complex",
+      "scoring_patch_pixels": null,
+      "context_margin_pixels": null,
+      "interpolation_method": null,
+      "optimizer": null,
+      "rounding_rule": null,
+      "required_controls": [
+        "identity",
+        "imposed_shift",
+        "shifted_reference_copy",
+        "actual_reference_offset_baseline_difference",
+        "locality",
+        "margin_sensitivity",
+        "stationary_probe"
+      ]
+    },
+    "nuisance_correction": {
+      "canonical_vector": "q_arc = Y - G_arc",
+      "target_vector": "Y_k = [dx(x,k), dy(x,k)]",
+      "arc_geometry": null,
+      "arc_samples_per_side": null,
+      "side_summary": "geometric_median",
+      "required_diagnostics": [
+        "raw_Y",
+        "all_arc_vectors",
+        "G_plus",
+        "G_minus",
+        "G_arc",
+        "q_arc",
+        "side_disagreement",
+        "within_side_scatter",
+        "componentwise_Y_equals_G_arc_plus_q_arc"
+      ]
+    },
+    "modal_analysis": {
+      "input": "q_arc",
+      "mode_range": null,
+      "window_length_w": null,
+      "fit_form": "Two-component center plus cosine and sine terms in ordered pair index.",
+      "winning_mode_rule": null,
+      "modal_gates": null,
+      "spatial_persistence_rule": null,
+      "notes": "Modal order is an ordered-pair harmonic index, not automatically a physical vibration frequency."
+    },
+    "depth_focus": {
+      "input": "q_arc",
+      "steering_basis": "[cos(Kz,k*z), sin(Kz,k*z)] applied to both measured vector components",
+      "kz_formula": "4*pi*B_perp,k / (lambda_operational * r_k * sin(theta_k))",
+      "operational_wavelength_or_velocity_model": null,
+      "nominal_depth_grid_m": null,
+      "window_aggregation_rule": null,
+      "recurrence_check_required": true,
+      "signed_depth_equivalence_check_required": true,
+      "depth_statement": "The z axis is nominal model depth. A calibration anchor is not independent absolute-depth validation."
+    }
+  },
+  "required_outputs": [
+    "run_manifest",
+    "complete_pair_table",
+    "filter_masks",
+    "registration_control_results",
+    "target_and_arc_vectors",
+    "scalar_quality_control",
+    "modal_metrics_and_support_masks",
+    "kz_geometry_table",
+    "depth_score_array_and_exact_z_grid",
+    "winning_window_identities",
+    "undisplayed_numerical_scores"
+  ],
+  "prohibited_inference": [
+    "Do not treat a spatial patch as allocation to a particular spectral-edge segment.",
+    "Do not treat repeated overlapping windows or adjacent spatial samples as independent detections.",
+    "Do not count periodic steering copies or opposite-sign equivalent branches as separate depths.",
+    "Do not reuse geometry or parameter values from another acquisition without declaring and validating them anew."
+  ]
+}
