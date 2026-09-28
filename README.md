@@ -1,6 +1,6 @@
-# Biondi Protocol Package (v1.7)
+# Biondi Protocol Package (v1.8) Newest version released September 28, 2026.
 
-This is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.7**. It is designed for You to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
+This (See zipped folder and accompanying summary) is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.8**. It is designed for You to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
 
 It enforces the processing order:
 
@@ -18,7 +18,7 @@ The package deliberately does **not** claim that a registration vector proves ph
 
 ## What You upload
 
-Upload the entire `biondi_protocol_package` folder, the complex SAR file, and a completed copy of `configs/example_run.json` to the agent. The agent should run the commands below from the package folder.
+Upload the entire `biondi_protocol_package` folder, the real life complex SAR file you are investigating,  for example in a complex HDF5 SLC. For a complex SLC delivered as TIFF, NITF, SAFE, CEOS, etc., it needs a small input adapter—or conversion into the declared HDF5-style fields—so the pipeline can obtain the complex image, timing, state vectors, and acquisition metadata. The agent should run the commands below from the package folder.
 
 ```bash
 python -m venv .venv
