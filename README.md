@@ -1,6 +1,6 @@
 # Biondi Protocol Package (v1.7)
 
-This is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.7**. It is designed for Ed to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
+This is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.7**. It is designed for You to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
 
 It enforces the processing order:
 
@@ -16,7 +16,7 @@ It enforces the processing order:
 
 The package deliberately does **not** claim that a registration vector proves physical motion or that a focused depth proves a void, penetration, or absolute depth.
 
-## What Ed uploads
+## What You upload
 
 Upload the entire `biondi_protocol_package` folder, the complex SAR file, and a completed copy of `configs/example_run.json` to the agent. The agent should run the commands below from the package folder.
 
@@ -35,7 +35,7 @@ The run creates a new output directory containing:
 - `manifest.json`: pair table, achieved overlap, validation result, input hash, and recurrence estimate;
 - `config_used.json`: immutable copy of the exact configuration.
 
-## What Ed must still do
+## What You must still do
 
 ### 1. Make the SAR file readable as a two-dimensional complex SLC
 
@@ -45,7 +45,7 @@ Supported direct input modes are:
 - `tif`/`tiff`: a 2-D complex TIFF;
 - `h5`/`hdf5`: provide `input.dataset_path` for the 2-D complex dataset.
 
-For Capella/ICEYE proprietary containers, Ed must identify the actual complex dataset and place that path in the configuration—or export it once to a `.npy` complex SLC. He must not substitute an intensity image or a Quicklook.
+For Capella/ICEYE proprietary containers, You must identify the actual complex dataset and place that path in the configuration—or export it once to a `.npy` complex SLC. He must not substitute an intensity image or a Quicklook.
 
 ### 2. Fill the acquisition-specific facts before looking at the target
 
@@ -73,7 +73,7 @@ Do not bypass a failure. In particular, stop when: the hash does not match; the 
 
 ## Important implementation status
 
-This is a runnable reference package and includes synthetic tests for the overlap gate, registration controls, and Kz-vector formation. It is intentionally strict about invalid/missing inputs. Before publication-grade use, Ed should validate its product adapter against the vendor metadata and against known planted translations on the actual SLC; replace the scalar baseline approximation with state-vector-derived per-pair `B_perp`; and review the registration estimator for sub-pixel fidelity on the sensor in use.
+This is a runnable reference package and includes synthetic tests for the overlap gate, registration controls, and Kz-vector formation. It is intentionally strict about invalid/missing inputs. Before publication-grade use, You should validate its product adapter against the vendor metadata and against known planted translations on the actual SLC; replace the scalar baseline approximation with state-vector-derived per-pair `B_perp`; and review the registration estimator for sub-pixel fidelity on the sensor in use.
 
 ## Agent instruction to paste with the files
 
