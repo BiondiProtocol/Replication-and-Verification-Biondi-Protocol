@@ -1,12 +1,12 @@
-# Biondi Protocol Package (v1.8) Newest version released September 28, 2026.
+# Biondi Protocol Package (v1.9) Newest version released October 10, 2026.
 
-This (See zipped folder and accompanying summary) is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.8**. It is designed for You to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
+This (See zipped folder and accompanying summary) is an executable, configuration-driven implementation of the **Generic Biondi Subaperture Tomography Protocol v1.9**. It is designed for You to hand to a coding agent together with a complex SAR SLC and an acquisition-specific run configuration.
 
 It enforces the processing order:
 
 1. verify the input file hash and axis convention;
 2. construct matched Reference/Offset filter pairs in the Doppler-conjugate axis;
-3. enforce the maximum 5% successive Offset-edge overlap;
+3. maximum 5% successive Offset-edge overlap no longer enforced;
 4. reconstruct each matched complex R/O pair;
 5. run registration controls before target processing;
 6. measure same-pair target and nuisance vectors;
@@ -55,7 +55,7 @@ The values that must come from the **current acquisition**, rather than another 
 - which axis is azimuth/Doppler-conjugate;
 - processed Doppler support and frequency convention;
 - passband width, B-shift, pair count, and edge placement;
-- slant range, incidence angle, and the LOS-orthogonal virtual baselines;
+- slant range, incidence angle, and the LOS-orthogonal virtual baselines; Acquisition time log to compute time-variant sub-aperture look perspective.
 - operational wavelength/velocity model and nominal depth grid;
 - target track and two or more nuisance arcs in native `[row, column]` coordinates.
 
@@ -67,7 +67,7 @@ Do not bypass a failure. In particular, stop when: the hash does not match; the 
 
 ## Configuration notes
 
-`maximum_successive_overlap_fraction` defaults to 0.05. With `b_shift_hz = 404`, the permitted overlap is 20.2 Hz and the next Offset-edge span must advance at least 383.8 Hz. The package writes the realized pair table to the manifest.
+`maximum_successive_overlap_fraction` defaults to 0.05: **Note this is no longer used to design sub-apertures.** 
 
 `target_track` and every nuisance arc are arrays of native SLC `[row, column]` points. Nuisance samples are combined with a median per side and the average of both sides. The complete nuisance arrays and the identity `Y = G_arc + q_arc` are retained.
 
